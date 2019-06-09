@@ -12,10 +12,8 @@ nginx_user: "nginx"
 nginx_group: "nginx"
 nginx_document_root: '/usr/local/nginx'
 letsencrypt_conf_path: /etc/letsencrypt
-nginx_service_reload: "service nginx reload"
-nginx_package_name:
-  - nginx
-  - python2-pip
+nginx_service_reload: "systemctl nginx reload"
+nginx_package_name: nginx
 certbot_command: certbot-2
 nginx_yum_repo_enabled: true
 epel_yum_repo_enabled: true
