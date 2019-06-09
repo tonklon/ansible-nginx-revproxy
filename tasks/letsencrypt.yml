@@ -50,7 +50,7 @@
         name: nginx
         state: reloaded
       when:
-        - site_enabled is success  
+        - site_enabled is success
   when:
     - active.changed
     - nginxinstalled is success
