@@ -10,7 +10,7 @@
     - nginx-revproxy
 
 - name: Get Active Sites
-  command: ls -1 /etc/nginx/sites-enabled/
+  command: "ls -1 {{ nginx_vhost_path_available }}"
   changed_when: "active.stdout_lines != nginx_revproxy_sites.keys()|sort()"
   check_mode: no
   register: active
@@ -18,12 +18,12 @@
     - lesencrypt
     - nginx-revproxy
 
-- name: Enable sites for ACME protocol 
+- name: Enable sites for ACME protocol
   block:
     - name: Add Https Site Config
       template:
         src: reverseproxy_ssl.conf.j2
-        dest: /etc/nginx/sites-available/{{ item.key }}.conf
+        dest: "{{ nginx_vhost_path_available }}/{{ item.key }}.conf"
         owner: root
         group: root
       with_dict: "{{ nginx_revproxy_sites }}"
@@ -34,15 +34,15 @@
 
     - name: Enable Site Config
       file:
-        src: /etc/nginx/sites-available/{{ item.key }}.conf
-        dest: /etc/nginx/sites-enabled/{{ item.key }}
+        src: "{{ nginx_vhost_path_available }}/{{ item.key }}.conf"
+        dest: "{{ nginx_vhost_path_enabled }}/{{ item.key }}"
         state: link
       with_dict: "{{ nginx_revproxy_sites }}"
       register: site_enabled
       when:
         - siteconfig is success
         - not ansible_check_mode
-        - item.value.letsencrypt | default(False)   
+        - item.value.letsencrypt | default(False)
         - item.key not in active.stdout_lines
 
     - name: Reload Nginx
@@ -50,7 +50,7 @@
         name: nginx
         state: reloaded
       when:
-        - site_enabled is success      
+        - site_enabled is success  
   when:
     - active.changed
     - nginxinstalled is success
@@ -69,7 +69,7 @@
 - name: Update Site Config
   template:
     src: reverseproxy_ssl_letsencrypt.conf.j2
-    dest: /etc/nginx/sites-available/{{ item.key }}.conf
+    dest: "{{ nginx_vhost_path_available }}/{{ item.key }}.conf"
     owner: root
     group: root
   with_dict: "{{ nginx_revproxy_sites }}"
@@ -83,7 +83,7 @@
 - name: Insert cert-bot renew in crontab
   cron:
     name: "cert-bot renew"
-    job: 'certbot-auto renew --post-hook "systemctl reload nginx" >> /var/log/letsencrypt/letsencrypt-update.log 2>&1'
+    job: 'certbot-auto renew --post-hook "service reload nginx" >> /var/log/letsencrypt/letsencrypt-update.log 2>&1'
     hour: 3
     minute: 30
     weekday: 1

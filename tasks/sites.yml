@@ -2,8 +2,8 @@
 - name: Add Site Config
   when:
     - nginxinstalled is succeeded
-#    - item.value.ssl != True | default(True)
-#    - item.value.letsencrypt != True | default(True)
+    - not item.value.ssl
+    - not item.value.letsencrypt
   register:
     siteconfig
   template:
@@ -18,8 +18,8 @@
 - name: Add Https Site Config
   when:
     - nginxinstalled is succeeded
-    - item.value.ssl | default(False)
-#    - item.value.letsencrypt != True | default(True)
+    - item.value.ssl
+    - item.value.letsencrypt
   register:
     siteconfig
   template:
