@@ -2,8 +2,8 @@
 - name: Add Site Config
   when:
     - nginxinstalled is succeeded
-    - item.value.ssl != True | default(True)
-    - item.value.letsencrypt != True | default(True)
+#    - item.value.ssl != True | default(True)
+#    - item.value.letsencrypt != True | default(True)
   register:
     siteconfig
   template:
@@ -19,7 +19,7 @@
   when:
     - nginxinstalled is succeeded
     - item.value.ssl | default(False)
-    - item.value.letsencrypt != True | default(True)
+#    - item.value.letsencrypt != True | default(True)
   register:
     siteconfig
   template:
@@ -50,7 +50,7 @@
 - name: Enable Site Config
   when:
     - siteconfig is succeeded
-    - item.value.letsencrypt != True | default(True)
+#    - item.value.letsencrypt != True | default(True)
     - not ansible_check_mode
   file:
     src='{{ nginx_vhost_path_available }}/{{ item.key }}.conf'

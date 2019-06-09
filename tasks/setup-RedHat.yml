@@ -54,6 +54,11 @@
     path: "{{ nginx_vhost_path_available }}"
     state: directory
 
+- name: create sites-enabled folder
+  file:
+    path: "{{ nginx_vhost_path_enabled }}"
+    state: directory
+
 - name: create ssl folders
   file:
     path: "{{ item }}"
