@@ -28,7 +28,7 @@ server {
    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
    ssl_session_timeout 5m;
-   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+   ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
    ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
    ssl_prefer_server_ciphers on;
    ssl_session_cache shared:SSL:10m;
@@ -49,7 +49,7 @@ server {
    }
 
    location /.well-known {
-      alias /var/www/{{ item.key }}/.well-known;
+      alias {{ nginx_document_root }}/{{ item.key }}/.well-known;
    }
 
    access_log /var/log/nginx/{{ item.key }}_access.log;
@@ -73,17 +73,17 @@ server {
    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
    ssl_session_timeout 5m;
-   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+   ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
    ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
    ssl_prefer_server_ciphers on;
    ssl_session_cache shared:SSL:10m;
 
    location /.well-known {
-      alias /var/www/{{ item.key }}/.well-known;
+      alias {{ nginx_document_root }}/{{ item.key }}/.well-known;
    }
 
    location / {
-      gzip off;
+      gzip on;
       proxy_set_header X-Forwarded-Ssl on;
       client_max_body_size {{ item.value.client_max_body_size | default('50M') }};
       proxy_set_header Upgrade $http_upgrade;

@@ -1,0 +1,21 @@
+---
+# vars file for roles/ansible-nginx-revproxy
+root_group: root
+nginx_conf_path: /etc/nginx/conf.d
+nginx_conf_file_path: /etc/nginx/nginx.conf
+nginx_mime_file_path: /etc/nginx/mime.types
+nginx_pidfile: /var/run/nginx.pid
+nginx_vhost_path_enabled: /etc/nginx/conf.d
+nginx_vhost_path_available: /etc/nginx/sites-available
+nginx_default_vhost_path: /etc/nginx/sites-enabled/default
+nginx_user: "nginx"
+nginx_group: "nginx"
+nginx_document_root: '/usr/local/nginx'
+letsencrypt_conf_path: /etc/letsencrypt
+nginx_service_reload: "service nginx reload"
+nginx_package_name:
+  - nginx
+  - python2-pip
+certbot_command: certbot-2
+nginx_yum_repo_enabled: true
+epel_yum_repo_enabled: true

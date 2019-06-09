@@ -1,0 +1,59 @@
+---
+- name: Update pkg cache.
+  shell: pkg update -f
+  when: ( freebsd_install_package_pkgng == true )
+
+- name: Ensure nginx and certbot are installed.
+  pkgng:
+    name: "{{ item }}"
+    state: present
+  with_items: '{{ nginx_package_name }}'
+  when: ( freebsd_install_package_pkgng == true )
+  register:
+    nginxinstalled
+
+- name: Ensure nginx and certbot are installed.
+  portinstall:
+    name: "{{ item }}"
+    use_packages: no
+    state: present
+  with_items: '{{ nginx_package_name }}'
+  when: ( freebsd_install_package_pkgng == false )
+  register:
+    nginxinstalled
+
+- name: Create logs directory.
+  file:
+    path: /var/log/nginx
+    state: directory
+
+- name: create sites-available folders
+  file:
+    path: "{{ nginx_vhost_path_available }}"
+    state: directory
+
+- name: create ssl folders
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "/etc/ssl/certs/"
+    - "/etc/ssl/private"
+    - "/etc/ssl/csr"
+
+- name: Generate an OpenSSL private key.
+  openssl_privatekey:
+    path: /etc/ssl/private/ssl-cert-snakeoil.key
+
+- name: Generate an OpenSSL CSR.
+  openssl_csr:
+    path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+    common_name: "{{ inventory_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/ssl/certs/ssl-cert-snakeoil.pem
+    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+    csr_path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+    provider: selfsigned

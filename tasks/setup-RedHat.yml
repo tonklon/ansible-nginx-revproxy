@@ -1,0 +1,69 @@
+---
+- name: Enable nginx repo.
+  template:
+    src: nginx.repo.j2
+    dest: /etc/yum.repos.d/nginx.repo
+    owner: root
+    group: root
+    mode: 0644
+  when: nginx_yum_repo_enabled
+
+- name: Enable epel repository
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch
+    enabled: no
+  when: epel_yum_repo_enabled
+
+- name: Ensure nginx is installed.
+  yum:
+    name: "{{ nginx_package_name }}"
+    state: present
+    enablerepo: epel
+  register:
+    nginxinstalled
+
+#- name: Update pyOpenSSL
+#  pip:
+#    name: "{{ item }}"
+#    state: latest
+#  loop:
+#    - pyOpenSSL
+#    - certbot
+
+- name: Create logs directory.
+  file:
+    path: /var/log/nginx
+    state: directory
+
+- name: create sites-available folder
+  file:
+    path: "{{ nginx_vhost_path_available }}"
+    state: directory
+
+- name: create ssl folders
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "/etc/ssl/certs/"
+    - "/etc/ssl/private"
+    - "/etc/ssl/csr"
+
+#- name: Generate an OpenSSL private key.
+#  openssl_privatekey:
+#    path: /etc/ssl/private/ssl-cert-snakeoil.key
+
+#- name: Generate an OpenSSL CSR.
+#  openssl_csr:
+#    path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+#    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+#    common_name: "{{ inventory_hostname }}"
+
+#- name: Generate a Self Signed OpenSSL certificate
+#  openssl_certificate:
+#    path: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+#    csr_path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+#    provider: selfsigned

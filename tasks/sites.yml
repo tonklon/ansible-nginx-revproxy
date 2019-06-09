@@ -1,0 +1,110 @@
+---
+- name: Add Site Config
+  when:
+    - nginxinstalled is succeeded
+    - item.value.ssl != True | default(True)
+    - item.value.letsencrypt != True | default(True)
+  register:
+    siteconfig
+  template:
+    src=reverseproxy.conf.j2
+    dest='{{ nginx_vhost_path_available }}/{{ item.key }}.conf'
+    owner=root
+    group='{{ root_group }}'
+  with_dict: "{{ nginx_revproxy_sites }}"
+  tags:
+    - nginx-revproxy
+
+- name: Add Https Site Config
+  when:
+    - nginxinstalled is succeeded
+    - item.value.ssl | default(False)
+    - item.value.letsencrypt != True | default(True)
+  register:
+    siteconfig
+  template:
+    src=reverseproxy_ssl.conf.j2
+    dest='{{ nginx_vhost_path_available }}/{{ item.key }}.conf'
+    owner=root
+    group='{{ root_group }}'
+  with_dict: "{{ nginx_revproxy_sites }}"
+  tags:
+    - nginx-revproxy
+
+- name: Get Active Sites
+  shell: ls -1 "{{ nginx_vhost_path_enabled }}"
+  register: active
+  changed_when: "active.stdout_lines != nginx_revproxy_sites.keys()|sort()"
+  check_mode: no
+  tags:
+    - nginx-revproxy
+
+- name: De-activate Sites
+  file: path='{{ nginx_vhost_path_enabled }}/{{ item }}' state=absent
+  with_items: "{{ active.stdout_lines }}"
+  when: item not in nginx_revproxy_sites
+  notify: Reload Nginx
+  tags:
+    - nginx-revproxy
+
+- name: Enable Site Config
+  when:
+    - siteconfig is succeeded
+    - item.value.letsencrypt != True | default(True)
+    - not ansible_check_mode
+  file:
+    src='{{ nginx_vhost_path_available }}/{{ item.key }}.conf'
+    dest='{{ nginx_vhost_path_enabled }}/{{ item.key }}'
+    state=link
+  with_dict: "{{ nginx_revproxy_sites }}"
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx-revproxy
+
+- name: Create WebRoot sites
+  when:
+    nginxinstalled is succeeded
+  file:
+    dest={{ nginx_document_root }}/{{ item.key }}/.well-known
+    mode=775
+    state=directory
+    owner='{{ nginx_user }}'
+    group='{{ nginx_group }}'
+  with_dict: "{{ nginx_revproxy_sites }}"
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx-revproxy
+
+- name: WebRoot Permissions Sites
+  when:
+    nginxinstalled is succeeded
+  file:
+    dest={{ nginx_document_root }}/{{ item.key }}
+    mode=775 state=directory
+    owner='{{ nginx_user }}'
+    group='{{ nginx_group }}'
+    recurse=yes
+  with_dict: "{{ nginx_revproxy_sites }}"
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx-revproxy
+
+- name: Get WebRoot Sites
+  shell: ls -1 {{ nginx_document_root }}/
+  register: webroot
+  changed_when: "webroot.stdout_lines != nginx_revproxy_sites.keys()|sort()"
+  check_mode: no
+  tags:
+    - nginx-revproxy
+
+- name: Remove WebRoot Sites
+  file: path={{ nginx_document_root }} /{{ item }}/ state=absent
+  with_items: "{{ webroot.stdout_lines }}"
+  when: item not in nginx_revproxy_sites
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx-revproxy

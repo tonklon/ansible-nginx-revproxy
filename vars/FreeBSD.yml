@@ -1,0 +1,21 @@
+---
+# vars file for roles/ansible-nginx-revproxy
+root_group: wheel
+nginx_conf_path: /usr/local/etc/nginx/conf.d
+nginx_conf_file_path: /usr/local/etc/nginx/nginx.conf
+nginx_mime_file_path: /usr/local/etc/nginx/mime.types
+nginx_pidfile: /var/run/nginx.pid
+nginx_vhost_path_enabled: /usr/local/etc/nginx/sites-enabled
+nginx_vhost_path_available: /usr/local/etc/nginx/sites-available
+nginx_default_vhost_path: /usr/local/etc/nginx/sites-enabled/default
+nginx_user: "www"
+nginx_group: "www"
+freebsd_install_package_pkgng: false
+nginx_document_root: '/usr/local/www'
+letsencrypt_conf_path: /usr/local/etc/letsencrypt
+nginx_service_reload: "service nginx reload"
+nginx_package_name:
+  - nginx
+  - security/py-certbot-nginx
+  - security/py-certbot
+certbot_command: certbot

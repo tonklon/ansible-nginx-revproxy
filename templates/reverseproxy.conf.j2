@@ -42,7 +42,7 @@ server {
    }
 
    location /.well-known {
-      alias /var/www/{{ item.key }}/.well-known;
+      alias {{ nginx_document_root }}/{{ item.key }}/.well-known;
    }
 
    access_log /var/log/nginx/{{ item.key }}_access.log;
