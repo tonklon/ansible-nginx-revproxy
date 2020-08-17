@@ -11,3 +11,9 @@ nginx_revproxy_sites:                                         # List of sites to
     ssl: true                                                 # Set to True if you want to redirect http to https
     hsts_max_age: 63072000                                    # Set HSTS header with max-age defined
     letsencrypt: false                                        # Set to True if you are using hispanico.letsencrypt-nginx-revproxy role
+
+nginx_revproxy_certbot_auto: true
+
+nginx_revproxy_certbot_packages:
+  - certbot
+  - python3-certbot-nginx

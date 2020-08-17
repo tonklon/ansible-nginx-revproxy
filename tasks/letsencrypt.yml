@@ -1,13 +1,23 @@
 ---
 
-- name: Install certbot
+- name: Install certbot-auto
   get_url:
     url: https://dl.eff.org/certbot-auto
     dest: /usr/bin/certbot-auto
     mode: "a+x"
+  when: nginx_revproxy_certbot_auto
   tags:
     - lesencrypt
-    - nginx-revproxy
+    - nginxrevproxy
+
+- name: Install certbot from repository
+  apt:
+    name: "{{ nginx_revproxy_certbot_packages }}"
+    state: present
+  when: not nginx_revproxy_certbot_auto
+  tags:
+    - lesencrypt
+    - nginxrevproxy
 
 - name: Get Active Sites
   command: "ls -1 {{ nginx_vhost_path_available }}"
@@ -59,7 +69,13 @@
     - nginx-revproxy
 
 - name: Generate certs (first time)
-  command: certbot-auto certonly --webroot -w /var/www/{{ item.key }} -d {{ item.value.domains | join(' -d ') }} --email {{ item.value.letsencrypt_email }} --non-interactive --agree-tos creates=/etc/letsencrypt/live/{{ item.key }}/fullchain.pem
+  command: |
+    certbot{{ '-auto' if nginx_revproxy_certbot_auto else '' }} certonly
+    --webroot -w {{ nginx_document_root }}/{{ item.key }}
+    -d {{ item.value.domains | join(' -d ') }}
+    --email {{ item.value.letsencrypt_email }}
+    --non-interactive --cert-name {{ item.key }}
+    --agree-tos creates=/etc/letsencrypt/live/{{ item.key }}/fullchain.pem
   with_dict: "{{ nginx_revproxy_sites }}"
   when: item.value.letsencrypt | default(False)
   tags:
@@ -83,7 +99,8 @@
 - name: Insert cert-bot renew in crontab
   cron:
     name: "cert-bot renew"
-    job: 'certbot-auto renew --post-hook "service reload nginx" >> /var/log/letsencrypt/letsencrypt-update.log 2>&1'
+    job: "certbot{{ '-auto' if nginx_revproxy_certbot_auto else '' }} \
+renew --post-hook \"{{nginx_service_reload}}\" >> /var/log/letsencrypt/letsencrypt-update.log 2>&1"
     hour: 3
     minute: 30
     weekday: 1
