@@ -45,7 +45,7 @@
     - name: Enable Site Config
       file:
         src: "{{ nginx_vhost_path_available }}/{{ item.key }}.conf"
-        dest: "{{ nginx_vhost_path_enabled }}/{{ item.key }}"
+        dest: "{{ nginx_vhost_path_enabled }}/{{ item.key }}.conf"
         state: link
       with_dict: "{{ nginx_revproxy_sites }}"
       register: site_enabled
