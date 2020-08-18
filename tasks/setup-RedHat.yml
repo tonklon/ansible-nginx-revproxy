@@ -27,13 +27,12 @@
   register:
     nginxinstalled
 
-#- name: Update pyOpenSSL
-#  pip:
-#    name: "{{ item }}"
-#    state: latest
-#  loop:
-#    - pyOpenSSL
-#    - certbot
+- name: Update pyOpenSSL
+  pip:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - pyOpenSSL
 
 - name: install selinux-related python binaries for Ansible to work
   yum:
@@ -71,19 +70,29 @@
     - "/etc/ssl/private"
     - "/etc/ssl/csr"
 
-#- name: Generate an OpenSSL private key.
-#  openssl_privatekey:
-#    path: /etc/ssl/private/ssl-cert-snakeoil.key
+- name: Generate Diffie-Hellman parameters with 4096 bits
+  openssl_dhparam:
+    path: /etc/ssl/dhparam-4096.pem
 
-#- name: Generate an OpenSSL CSR.
-#  openssl_csr:
-#    path: /etc/ssl/csr/ssl-cert-snakeoil.csr
-#    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
-#    common_name: "{{ inventory_hostname }}"
+- name: Generate an OpenSSL private key.
+  openssl_privatekey:
+    path: /etc/ssl/private/ssl-cert-snakeoil.key
 
-#- name: Generate a Self Signed OpenSSL certificate
-#  openssl_certificate:
-#    path: /etc/ssl/certs/ssl-cert-snakeoil.pem
-#    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
-#    csr_path: /etc/ssl/csr/ssl-cert-snakeoil.csr
-#    provider: selfsigned
+- name: Generate an OpenSSL CSR.
+  openssl_csr:
+    path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+    common_name: "{{ inventory_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/ssl/certs/ssl-cert-snakeoil.pem
+    privatekey_path: /etc/ssl/private/ssl-cert-snakeoil.key
+    csr_path: /etc/ssl/csr/ssl-cert-snakeoil.csr
+    provider: selfsigned
+
+- name: enable nginx service
+  service:
+    name: nginx
+    state: started
+    enabled: yes
