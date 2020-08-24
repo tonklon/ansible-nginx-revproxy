@@ -11,10 +11,19 @@
     - nginxrevproxy
 
 - name: Install certbot from repository
+  yum:
+    name: "{{ nginx_revproxy_certbot_packages }}"
+    state: present
+  when: (not nginx_revproxy_certbot_auto) and (ansible_os_family == 'RedHat')
+  tags:
+    - lesencrypt
+    - nginxrevproxy
+
+- name: Install certbot from repository
   apt:
     name: "{{ nginx_revproxy_certbot_packages }}"
     state: present
-  when: not nginx_revproxy_certbot_auto
+  when: (not nginx_revproxy_certbot_auto) and (ansible_os_family != 'RedHat')
   tags:
     - lesencrypt
     - nginxrevproxy
