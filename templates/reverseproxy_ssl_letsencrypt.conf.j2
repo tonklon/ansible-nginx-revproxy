@@ -55,6 +55,13 @@ server {
    resolver 1.1.1.1 8.8.8.8 valid=300s;
    resolver_timeout 5s; 
 
+{% if item.value.client_certificate.verify is defined %}
+   ssl_client_certificate {{ item.value.client_certificate.truststore }};
+   ssl_verify_client {{ item.value.client_certificate.verify }};
+
+   ssl_verify_depth {{ item.value.client_certificate.verify_depth }};
+{% endif %}
+
    add_header X-Frame-Options DENY;
    add_header X-Content-Type-Options nosniff;
    add_header X-XSS-Protection "1; mode=block";
@@ -74,6 +81,9 @@ server {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Frame-Options SAMEORIGIN;
+{% if item.value.client_certificate.pass is true %}
+      proxy_set_header X-SSL-Client-Cert $ssl_client_cert;
+{% endif %}
       proxy_pass http://{{ item.key }}_backend;
    }
 }
