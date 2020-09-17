@@ -110,9 +110,9 @@
     name: "cert-bot renew"
     job: "certbot{{ '-auto' if nginx_revproxy_certbot_auto else '' }} \
 renew --post-hook \"{{nginx_service_reload}}\" >> /var/log/letsencrypt/letsencrypt-update.log 2>&1"
-    hour: 3
-    minute: 30
-    weekday: 1
+    hour: '3'
+    minute: '30'
+    weekday: '1'
   tags:
     - lesencrypt
     - nginx-revproxy
