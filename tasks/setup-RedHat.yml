@@ -27,10 +27,10 @@
   register:
     nginxinstalled
 
-- name: Update pyOpenSSL
+- name: Install pyOpenSSL
   pip:
     name: "{{ item }}"
-    state: latest
+    state: present
   loop:
     - pyOpenSSL
 
